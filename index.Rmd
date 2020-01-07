@@ -28,18 +28,34 @@ options(htmltools.dir.version = FALSE)
 
 # Overview
 
+.pull-left[
 
-```{r echo = FALSE, out.width = 500}
-knitr::include_graphics("images/actor_network.png")
-```
+- Network Components
+- Data Structures
+- Network Viz
+- Network Analysis
+- Interactivity
 
-Talk about covering:
+]
 
-- components of network viz
-- packages in R
-- how to turn them interactive
+.pull-right[
 
-We will do that off the back of an actor network example.
+![](images/actor_network.png)
+
+]
+
+---
+
+# Test
+
+.pull-left[
+...
+![](https://github.com/BobbyGlennS.png)
+]
+.pull-right[
+...
+![](https://github.com/BobbyGlennS.png)
+]
 
 ---
 
