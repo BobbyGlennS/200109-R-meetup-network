@@ -49,12 +49,17 @@ options(htmltools.dir.version = FALSE)
 # Test
 
 .pull-left[
-...
-![](https://github.com/BobbyGlennS.png)
+```{r}
+knitr::include_graphics("https://github.com/BobbyGlennS.png")
+```
+
 ]
+
 .pull-right[
-...
-![](https://github.com/BobbyGlennS.png)
+```{r}
+knitr::include_graphics("https://github.com/BobbyGlennS.png")
+```
+
 ]
 
 ---
