@@ -283,6 +283,7 @@ actor_network %>%
 - Social networks
 - Transport networks
 - Flowcharts
+- Transitions
 
 ---
 class: inverse, center, middle
@@ -659,21 +660,21 @@ actor_distances[14:18, 14:18] %>%
 ---
 # Degrees of Separation
 
-Say we want to know for each actor the distance to <em>Leonardo DiCaprio</em>.
+Say we want to know for each actor the distance to <em>Bruce Willis</em>.
 
 --
 <hr>
 
 ```{r results = "hide"}
-central_actor <- "Leonardo DiCaprio"
-how_far_is_leo <- actor_distances[central_actor, ]
+central_actor <- "Bruce Willis"
+how_far_are_they <- actor_distances[central_actor, ]
 ```
 
 --
 <hr>
 
 ```{r}
-how_far_is_leo
+how_far_are_they
 ```
 
 ---
@@ -688,7 +689,7 @@ Let's add this to our `tbl_graph` data.
 actor_network <-
   actor_network %>%
   activate(nodes) %>%
-  mutate(steps_from_central_node = as.character(how_far_is_leo)) #<<
+  mutate(steps_from_central_node = as.character(how_far_are_they)) #<<
 ```
 
 --
@@ -758,14 +759,427 @@ class: inverse, center, middle
 
 # Shortest Path
 
-Naomi Scott is *really* far removed from Leo.
+Naomi Scott is *really* far removed from Bruce.
 What would be the quickest way for them to get to know each other?
 
 ---
 
 # Shortest Path
 
+We want to get to this:
 
+```{r echo=FALSE, fig.width = 12}
+# define nodes of interest
+to_actor <- "Naomi Scott"
+
+from_ix <- actor_network %>%
+  activate(nodes) %>%
+  pull(name) %>%
+  purrr::detect_index(~ . == central_actor)
+
+to_ix <- actor_network %>%
+  activate(nodes) %>%
+  pull(name) %>%
+  purrr::detect_index(~ . == to_actor)
+
+# initiate `selected` columns
+actor_network <-
+  actor_network %>%
+  activate(nodes) %>%
+  mutate(selected_node = 0) %>%
+  activate(edges) %>%
+  mutate(selected_edge = 0)
+
+# calculate a shortest path for two nodes
+actor_network <-
+  actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) %>%
+  activate(nodes) %>%
+  mutate(selected_node = 1) %>%
+  activate(edges) %>%
+  mutate(selected_edge = 1) %>%
+  unmorph() %>% 
+  activate(nodes) %>% 
+  arrange(selected_node)
+
+ggraph(actor_network, layout = "kk") +
+  geom_edge_fan(aes(alpha = selected_edge,
+                    color = selected_edge,
+                    edge_width = selected_edge),
+                lineend = "round",
+                show.legend = FALSE) +
+  geom_node_label(aes(label = name,
+                      fill = steps_from_central_node,
+                      alpha = selected_node),
+                  size = 4,
+                  colour = "white") +
+  scale_edge_alpha(range = c(0.04, 1)) +
+  scale_edge_width(range = c(1,2)) +
+  scale_alpha(range = c(0.3, 1), guide = FALSE) +
+  scale_fill_viridis_d(option = "A", end = 0.8, direction = -1) +
+  labs(title = "Bring Your Hand Sanitizer",
+       subtitle = stringr::str_glue("How Many Handshakes Are You Removed ",
+                                    "From {central_actor}"),
+       fill = "") +
+  theme_graph() +
+  xlim(-3, 3)
+```
+
+---
+class: inverse, center, middle
+
+# Highlighting
+
+---
+
+# Highlighting
+
+Let's start with assuming we have the data (we'll get to calculating the data later).
+
+How do we get to this chart?
+
+We can use *highlighting*.
+
+---
+
+# Highlighting
+
+Assume we have a `selected_node` variable in the node data, and a `selected_edge` variable in the edge data.
+
+These variables are boolean indicators whether the respective node and edge should be highlighted or not.
+
+---
+
+# Highlighting 
+
+For the edges, we can replace:
+
+```{r eval=FALSE}
+geom_edge_fan(colour = "#AAAAAA") +   
+```
+
+with:
+
+```{r eval = FALSE}
+  geom_edge_fan(
+    aes(alpha = selected_edge, #<<
+        color = selected_edge, #<<
+        edge_width = selected_edge) #<<
+  )
+```
+
+---
+
+# Highlighting
+
+.pull-left[
+```{r plot-last6, fig.show = 'hide'}
+ggraph(actor_network, layout = "kk") + 
+  geom_edge_fan(
+    aes(alpha = selected_edge, #<<
+        color = selected_edge, #<<
+        edge_width = selected_edge) #<<
+  ) +
+  geom_node_label(
+    aes(label = name,
+        fill = steps_from_central_node),
+    colour = "white",
+  ) + 
+  scale_fill_viridis_d(
+    option = "A",
+    end = 0.8, 
+    direction = -1
+  ) +
+  theme_graph()
+```
+]
+.pull-right[
+```{r ref.label = 'plot-last6', echo = FALSE, fig.width = 6}
+```
+]
+
+---
+
+# Highlighting 
+
+A better view:
+
+```{r fig.width=12, echo=FALSE}
+ggraph(actor_network, layout = "kk") + 
+  geom_edge_fan(
+    aes(alpha = selected_edge, #<<
+        color = selected_edge, #<<
+        edge_width = selected_edge) #<<
+  ) +
+  geom_node_label(
+    aes(label = name,
+        fill = steps_from_central_node),
+    colour = "white",
+  ) + 
+  scale_fill_viridis_d(
+    option = "A",
+    end = 0.8, 
+    direction = -1
+  ) +
+  theme_graph() +
+  xlim(-3, 3)
+```
+
+---
+
+# Highlighting
+For the nodes, we can replace:
+
+```{r eval=FALSE}
+geom_node_label(
+  aes(label = name,
+      fill = steps_from_central_node),
+  colour = "white",
+)
+```
+
+with:
+
+```{r eval = FALSE}
+geom_node_label(
+  aes(label = name,
+      fill = steps_from_central_node,
+      alpha = selected_node), #<<
+  size = 4,
+  colour = "white"
+)
+```
+
+---
+
+# Highlighting
+
+.pull-left[
+```{r plot-last7, fig.show = 'hide'}
+ggraph(actor_network, layout = "kk") + 
+  geom_edge_fan(
+    aes(alpha = selected_edge, 
+        color = selected_edge, 
+        edge_width = selected_edge)
+  ) +
+  geom_node_label(
+    aes(label = name,
+        fill = steps_from_central_node,
+        alpha = selected_node), #<<
+    size = 4,
+    colour = "white"
+  ) + 
+  scale_fill_viridis_d(
+    option = "A",
+    end = 0.8, 
+    direction = -1
+  ) +
+  theme_graph()
+```
+]
+.pull-right[
+```{r ref.label = 'plot-last7', echo = FALSE, fig.width = 6}
+```
+]
+
+---
+
+# Highlighting 
+
+A better view:
+
+```{r fig.width=12, echo=FALSE}
+ggraph(actor_network, layout = "kk") + 
+  geom_edge_fan(
+    aes(alpha = selected_edge, #<<
+        color = selected_edge, #<<
+        edge_width = selected_edge)
+  ) +
+  geom_node_label(aes(label = name,
+                      fill = steps_from_central_node,
+                      alpha = selected_node), #<<
+                  size = 4,
+                  colour = "white") +
+  scale_fill_viridis_d(
+    option = "A",
+    end = 0.8, 
+    direction = -1
+  ) +
+  theme_graph() +
+  xlim(-3, 3)
+```
+
+---
+
+# Highlighting
+
+Style some of the graphical parameters by adding:
+
+```{r eval=FALSE}
+ggraph(actor_network, layout = "kk") +
+  ...
+  scale_edge_alpha(range = c(0.04, 1), guide = FALSE) +
+  scale_edge_width(range = c(1,2), guide = FALSE) +
+  scale_alpha(range = c(0.3, 1), guide = FALSE)
+```
+
+And add a nice title:
+
+```{r eval=FALSE}
+ggraph(actor_network, layout = "kk") +
+  ...
+  labs(title = "Bring Your Hand Sanitizer",
+       subtitle = stringr::str_glue("How Many Handshakes Are You Removed ",
+                                    "From {central_actor}"), 
+       fill = "") 
+```
+
+---
+
+# Highlighting
+
+The result:
+
+```{r echo=FALSE, fig.width=12}
+ggraph(actor_network, layout = "kk") +
+  geom_edge_fan(aes(alpha = selected_edge,
+                    color = selected_edge,
+                    edge_width = selected_edge),
+                lineend = "round",
+                show.legend = FALSE) +
+  geom_node_label(aes(label = name,
+                      fill = steps_from_central_node,
+                      alpha = selected_node),
+                  size = 4,
+                  colour = "white") +
+  scale_edge_alpha(range = c(0.04, 1), guide = FALSE) + #<<
+  scale_edge_width(range = c(1,2), guide = FALSE) + #<<
+  scale_alpha(range = c(0.3, 1), guide = FALSE) + #<<
+  scale_fill_viridis_d(option = "A", end = 0.8, direction = -1) +
+  labs(title = "Bring Your Hand Sanitizer",
+       subtitle = stringr::str_glue("How Many Handshakes Are You Removed ",
+                                    "From {central_actor}"),
+       fill = "") +
+  theme_graph() +
+  xlim(-3, 3)
+```
+
+---
+class: inverse, center, middle
+
+# Back to Shortest Path
+---
+
+# Shortest Path
+
+.center[How do we get the nodes and edges that are part of the shortest path?]
+
+.pull-left[
+Enter `morph()`
+
+  - Extract temporarily a subset from your network
+  - Do some operations just on this subnetwork
+  - *morph* it back in
+]
+
+.pull-right[
+```{r eval=FALSE}
+actor_network %>%
+  
+  # EXTRACT SUB NETWORK
+  morph(...) %>% 
+  
+  # DO SOME OPERATIONS
+  mutate() %>% 
+  
+  # MERGE BACK
+  unmorph()
+```
+
+]
+
+---
+
+# Shortest Path
+
+Let's start with defining `selected_node` and `selected_edge`.
+
+```{r eval=FALSE}
+actor_network <-
+  actor_network %>%
+  activate(nodes) %>%
+  mutate(selected_node = 0) %>% #<<
+  activate(edges) %>%
+  mutate(selected_edge = 0) #<<
+```
+
+---
+
+# Shortest Path
+
+Now we `morph()` out the network that *only* contains the shortest path
+
+```{r eval=FALSE}
+actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) #<<
+```
+
+---
+
+# Shortest Path
+
+We can have a sneak peek inside with `crystallise()`
+
+```{r eval=FALSE}
+actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) %>% 
+  crystallise() %>% #<<
+  pull(graph) #<<
+```
+
+---
+
+# Shortest Path
+
+```{r echo=FALSE, highlight.output=c(9:11,16:17)}
+actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) %>% 
+  crystallise() %>% 
+  pull(graph)
+```
+
+---
+
+# Shortest Path
+
+Let's set the relevant nodes and edges to `1`
+
+```{r eval=FALSE, highlight.output=c(7,8,15:18)}
+actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) %>% 
+  activate(nodes) %>% #<<
+  mutate(selected_node = 1) %>% #<<
+  activate(edges) %>% #<<
+  mutate(selected_edge = 1) #<<
+```
+
+---
+
+# Shortest Path
+
+Don't forget to `unmorph()` to merge the shortest path network back into the network and store the data.
+
+```{r eval=FALSE}
+actor_network <- #<<
+  actor_network %>%
+  morph(to_shortest_path, from = from_ix, to = to_ix) %>%
+  activate(nodes) %>%
+  mutate(selected_node = 1) %>%
+  activate(edges) %>%
+  mutate(selected_edge = 1) %>%
+  unmorph() #<<
+```
+---
 class: inverse, center, middle
 
 # Network Exploration
