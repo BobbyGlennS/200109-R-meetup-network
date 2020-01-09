@@ -1,0 +1,76 @@
+---
+title: "Making a Graph with `{ggraph}`"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggraph)
+library(igraph)
+library(tidygraph)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+load("actor_data_course3.rdata")
+```
+
+## `{ggraph}`
+
+### Create a graph from scratch
+
+```{r graph, exercise=TRUE, exercise.lines = 10}
+ggraph(actor_network, layout = "auto") +
+
+```
+
+### Try out different edges
+
+```
+"arc"         "parallel"
+"bend"        "span"
+"density"     "tile"
+"diagonal"    "point"
+"elbow"       "hive"
+"fan"
+```
+
+
+```{r edge, exercise=TRUE, exercise.lines = 10}
+ggraph(actor_network, layout = "kk") +
+  geom_edge_fan(colour = "#AAAAAA") + #<<
+  geom_node_point(size = 4, 
+                  colour = "#992D5A")
+```
+
+
+### Try out layouts
+
+A list of possible layouts to choose from:
+
+```
+"sugiyama     "mds"
+"star"        "sphere"
+"circle"      "randomly"
+"dh"          "fr"
+"gem"         "kk"
+"graphopt"    "drl"
+"grid"        "lgl"
+```
+
+```{r layouts, exercise=TRUE}
+ggraph(actor_network, layout = "kk") + 
+  geom_edge_fan(colour = "#AAAAAA") + 
+  geom_node_label(
+    aes(label = name),
+    size = 2,
+    fill = "#992D5A",
+    colour = "white"
+  ) + #<<
+  theme_graph() +
+  xlim(-3, 3)
+```
+
+
+
+
