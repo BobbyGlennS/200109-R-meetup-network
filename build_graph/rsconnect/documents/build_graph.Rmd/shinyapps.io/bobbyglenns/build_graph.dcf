@@ -1,0 +1,10 @@
+name: build_graph
+title:
+username:
+account: bobbyglenns
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1640150
+bundleId: 2717003
+url: https://bobbyglenns.shinyapps.io/build_graph/
+when: 1578581163.476
