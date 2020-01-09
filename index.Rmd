@@ -581,7 +581,7 @@ class: inverse, center, middle
 
 A`{ggplot2}` style way to plotting network data
 
-![Interactive Worksheet](https://bobbyglenns.shinyapps.io/build_graph/)
+[https://bobbyglenns.shinyapps.io/build_graph/](https://bobbyglenns.shinyapps.io/build_graph/)
 
 ---
 
